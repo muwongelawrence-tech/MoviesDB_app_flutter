@@ -40,11 +40,14 @@ class MoviesListing extends StatefulWidget {
 
 class _MoviesListingState extends State<MoviesListing> {
   List<MovieModel> movies = <MovieModel>[];
+   int counter = 0;
 
   fetchMovies() async {
     var data = await MoviesProvider.getJson();
 
     setState(() {
+      //Increasing counter here
+      counter++;
       List<dynamic> results = data['results'];
 
       //Creating list of MovieModel objects
@@ -56,10 +59,17 @@ class _MoviesListingState extends State<MoviesListing> {
     });
   }
 
+// movies are fetched only once at app’s start-up
+// this prevents calling the movies every time the state changes.
+//The initState() method is called only once when a state object is created.
+   @override
+  void initState() {
+    super.initState();
+    fetchMovies();
+  }
+
   @override
   Widget build(BuildContext context) {
-    fetchMovies();
-
     return Scaffold(
       body: ListView.builder(
         //Calculating list size 
@@ -70,7 +80,13 @@ class _MoviesListingState extends State<MoviesListing> {
             //Padding around the list item   
             padding: const EdgeInsets.all(8.0),
             //UPDATED CODE: Using MovieTile object to render movie's title, description and image
-            child: MovieTile(movies, index),
+            child:  Column(
+              children: [
+                MovieTile(movies, index),
+                //Widget added to print number of requests made to fetch movies
+                Text("Movies fetched: $counter"),
+              ],
+            ),
           );
         },
       ),
@@ -145,6 +161,10 @@ class MovieTile extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Text(
               movies[index].overview,
+            style: const TextStyle(
+                fontSize: 20,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ),
           Divider(color: Colors.grey.shade500),
